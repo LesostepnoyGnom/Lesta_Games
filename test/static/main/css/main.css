@@ -1,0 +1,13 @@
+body {
+    background: #2c2c2c;
+}
+
+main {
+    color: #fff;
+}
+
+aside img {
+    width: 300px;
+    float: left
+}
+

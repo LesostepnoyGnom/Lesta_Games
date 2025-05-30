@@ -1,0 +1,13 @@
+body {
+    background: #2c2c2c;
+}
+
+main {
+    color: #fff;
+    top: 60%;
+	left: 50%;
+	position: absolute;
+	margin-top: -225px;
+	margin-left: -225px;
+	text-align: center;
+}

@@ -45,7 +45,8 @@ def get_tf(words):
     for word in words:
         dct[word] = dct.get(word, 0) + 1
     dct = dict(map(lambda x: (x[0], x[1]/len(words)), dct.items()))
-    return sorted(dct.items(), key=lambda x: x[0])
+    dct = sorted(dct.items(), key=lambda x: x[0])
+    return sorted(dct, key=lambda x: x[1], reverse=True)
 
 def get_idf(words, docs):
     dct = {}
