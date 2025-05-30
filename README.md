@@ -22,8 +22,8 @@ ____
 ```
 
 Запуск приложения  
-```console
-# устоновка образа проекта
+```bush
+# установка образа проекта
 docker pull lesostepnoygnom/lesta-project:latest
 
 # запуск контейнера
