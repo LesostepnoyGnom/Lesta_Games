@@ -1,6 +1,6 @@
 FROM python:3.12-slim AS build
 RUN apt-get update
-RUN apt-get install -y --no-install-recommends build-essential gcc
+RUN apt-get install -y --no-install-recommends build-essential gcc vim
 
 RUN python -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
@@ -22,5 +22,8 @@ ENV PATH="/opt/venv/bin:$PATH"
 WORKDIR /app
 COPY --from=build /app .
 
+RUN mkdir -p /app/static /app/media && \
+    chmod -R 755 /app/static /app/media
+
 EXPOSE 8080
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8080"]
+#CMD ["sh", "-c", "python manage.py migrate && python manage.py runserver 0.0.0.0:8080"]

@@ -14,7 +14,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
@@ -63,26 +63,15 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'test.wsgi.application'
-'''
+
 DATABASES = {
     'default': {
-        'ENGINE': os.getenv('PG_ENGINE'),
-        'HOST': os.getenv('PG_HOST'),
-        'PORT': os.getenv('PG_PORT'),
-        'USER': os.getenv('PG_USER'),
-        'PASSWORD': os.getenv('PG_PASSWORD'),
-        'NAME': os.getenv('PG_NAME')
-    }
-}
-'''
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'HOST': 'localhost',
-        'PORT': '5432',
-        'USER': 'postgres',
-        'PASSWORD': '57365200*!Ebuchij',
-        'NAME': 'postgres'
+        'ENGINE': os.getenv('PG_DB', 'django.db.backends.postgresql'),
+        'HOST': 'db',
+        'PORT': os.getenv('PG_PORT', '5432'),
+        'USER': os.getenv('PG_USER', 'postgres'),
+        'PASSWORD': os.getenv('PG_PASSWORD', '57365200*!Ebuchij'),
+        'NAME': os.getenv('PG_NAME', 'postgres')
     }
 }
 
@@ -110,16 +99,11 @@ USE_I18N = True
 USE_TZ = True
 
 STATIC_URL = '/static/'
-#STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-
-#MEDIA_URL = '/media/'
-#MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+STATIC_ROOT = '/static'
 
 STATICFILES_DIRS = (os.path.join(BASE_DIR, 'main/static'), )
 
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+MEDIA_URL = '/media/'
+MEDIA_ROOT = '/app/media'
 
-#SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PHOTO', 'https')
-#SECURE_SSL_REDIRECT = True
-#SESSION_COOKIE_SECURE = True
-#CSRF_COOKIE_SECURE = True
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

@@ -68,7 +68,7 @@ class MainAPIView(APIView):
 
 class MainAPIViewVersion(APIView):
     def get(self, request):
-        return Response({'version': '1.0.0'})
+        return Response({'version': '2.0.0'})
 
 class MainAPIViewMetrics(APIView):
     def get(self, request):
