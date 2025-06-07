@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.1.0 (05.06.2025)
+
+### Features
+- добавил `docker-compose.yml`
+
 ## 2.0.0 (03.06.2025)
 
 ### BREAKING CHANGE

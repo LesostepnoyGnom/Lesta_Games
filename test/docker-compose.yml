@@ -30,14 +30,12 @@ services:
       db:
         condition: service_healthy
     environment:
-      - PG_DB=django.db.backends.postgresql
       - PG_HOST=db
       - PG_PORT=5432
       - PG_USER=postgres
       - PG_PASSWORD=57365200*!Ebuchij
       - PG_NAME=postgres
       - PYTHONUNBUFFERED=1
-      - DEBUG=False
 
 volumes:
   postgres_data:
