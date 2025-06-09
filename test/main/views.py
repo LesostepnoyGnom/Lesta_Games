@@ -1,7 +1,9 @@
+from django.contrib.auth.decorators import login_required
 from django.db.models import Count, Min, Avg, Max
 from django.shortcuts import render
 from rest_framework import generics
 from rest_framework.views import APIView
+from drf_yasg.utils import swagger_auto_schema
 
 from .forms import UploadFileForm
 from rest_framework.response import Response
@@ -18,6 +20,7 @@ def handle_uploaded_file(f):
         for chunk in f.chunks():
             destination.write(chunk)
 
+@login_required(login_url='/users/login/')
 def index(request):
 
     if request.method == "POST":
@@ -48,7 +51,7 @@ def index(request):
             )
             record.save()
 
-            data = {"title": "Lesta Game тестовое задание", "rows": rows[:50]}
+            data = {"title": "TF-IDF приложение", "rows": rows[:50]}
 
             return render(request, 'main/table.html', data)
 
@@ -56,22 +59,70 @@ def index(request):
         form = UploadFileForm()
 
     return render(request, 'main/file.html',
-                  {"title": "Lesta Game тестовое задание",
+                  {"title": "TF-IDF приложение",
                             "form": form})
 
 def test_pg(request):
     return render(request, 'main/test_page.html')
 
+
 class MainAPIView(APIView):
+
+    @swagger_auto_schema(
+        operation_description="""
+                    Возвращает статус приложения
+                    """,
+        responses={200: "Статус работы приложения"}
+    )
+
     def get(self, request):
         return Response({'status': 'OK'})
 
 class MainAPIViewVersion(APIView):
+
+    @swagger_auto_schema(
+        operation_description="""
+                Возвращает версию приложения
+                """,
+        responses={200: "Версия приложения"}
+    )
+
     def get(self, request):
-        return Response({'version': '2.0.0'})
+        return Response({'version': '2.1.0'})
 
 class MainAPIViewMetrics(APIView):
+
+    @swagger_auto_schema(
+        operation_description="""
+            ## Метрики обработки файлов  
+
+            Возвращает статистику по обработанным файлам:  
+            - Общее количество файлов  
+            - Минимальное время обработки  
+            - Среднее время обработки  
+            - Максимальное время обработки  
+            - timestamp обработки файла  
+            - Максимальный размер текста
+            - Средний размер текста  
+
+            **Пример ответа:**  
+            ```json
+            {
+                "files_processed": 100,
+                "min_time_processed": 0.1,
+                "avg_time_processed": 0.5,
+                "max_time_processed": 2.3,
+                "latest_file_processed_timestamp": 1672531200,
+                "max_len_text": 1024,
+                "avg_len_text": 512.5
+            }
+            ```
+            """,
+        responses={200: "Статистика обработки файлов"}
+    )
+
     def get(self, request):
+
         files_processed = Main.objects.aggregate(total=Count('*'))['total']
         min_time_processed = Main.objects.aggregate(min_time=Min('time_processed'))['min_time']
         avg_time_processed = round(Main.objects.aggregate(avg_time=Avg('time_processed'))['avg_time'], 5)

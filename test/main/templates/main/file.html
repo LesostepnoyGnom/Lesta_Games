@@ -23,6 +23,20 @@
         .error {
             color: red;
         }
+
+        #user_logout {
+            position: absolute;
+            top: 40px;
+            left: 748px;
+        }
+        #user_text {
+            position: absolute;
+            top: 15px;
+            left: 750px;
+        }
+        #text {
+            color: #00FF00;
+        }
     </style>
 
 </head>
@@ -34,12 +48,24 @@
 
     <main>
 
+        {% if user.is_authenticated %}
+            <div class="user-greeting" id="user_text">
+                <i>user:</i> <strong id="text">{{ user.username }}</strong>
+            </div>
+        {% else %}
+            <div>Вы не авторизованы</div>
+        {% endif %}
+
         <h1>{{ title }}</h1>
 
         <form action="" method="post" enctype="multipart/form-data">
             {% csrf_token %}
             {{ form.as_p }}
             <p><button type="submit" name="make_table">Отправить и обработать</button></p>
+        </form>
+
+        <form action="/users/logout/">
+            <p><button type="submit" id="user_logout">Выйти</button></p>
         </form>
 
     </main>>

@@ -4,7 +4,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from django.conf.global_settings import STATICFILES_DIRS, SECURE_PROXY_SSL_HEADER
+from django.conf.global_settings import STATICFILES_DIRS, SECURE_PROXY_SSL_HEADER, LOGIN_REDIRECT_URL, \
+    LOGOUT_REDIRECT_URL
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -14,7 +15,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
@@ -23,6 +24,7 @@ ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
     'main.apps.MainConfig',
+    'users.apps.UsersConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -30,6 +32,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'drf_yasg',
 ]
 
 MIDDLEWARE = [
@@ -67,7 +70,7 @@ WSGI_APPLICATION = 'test.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': os.getenv('PG_DB', 'django.db.backends.postgresql'),
-        'HOST': 'db',
+        'HOST': 'localhost',
         'PORT': os.getenv('PG_PORT', '5432'),
         'USER': os.getenv('PG_USER', 'postgres'),
         'PASSWORD': os.getenv('PG_PASSWORD', '57365200*!Ebuchij'),
@@ -107,3 +110,7 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = '/app/media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+LOGIN_REDIRECT_URL = 'home'  # отправить после авторизации
+LOGIN_URL = '/users/login'  # отправить неавторизованного
+LOGOUT_REDIRECT_URL = '/users/login' # отправить после выхода
