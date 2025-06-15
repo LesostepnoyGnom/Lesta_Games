@@ -1,38 +1,58 @@
 from django.contrib.auth.decorators import login_required
-from django.db.models import Count, Min, Avg, Max
 from django.shortcuts import render
-from rest_framework import generics
-from rest_framework.views import APIView
-from drf_yasg.utils import swagger_auto_schema
 
 from .forms import UploadFileForm
-from rest_framework.response import Response
 
 from . import functions as fn
-from .models import Main
-from .serializers import MainSerializer
+from .models import Main, Documents, Collection
 
 import time
 
 def handle_uploaded_file(f):
     #with open(f"uploads/{f.name}", "wb+") as destination:
-    with open("uploads/text", "wb+") as destination:
+    file_path = f"uploads/{f.name}"
+    with open(file_path, "wb+") as destination:
         for chunk in f.chunks():
             destination.write(chunk)
+    return file_path
 
 @login_required(login_url='/users/login/')
 def index(request):
 
     if request.method == "POST":
 
-        form = UploadFileForm(request.POST, request.FILES)
+        form = UploadFileForm(request.POST, request.FILES, user_id=request.user.id)
 
         if form.is_valid():
-            handle_uploaded_file(form.cleaned_data['file'])
+            file_path = handle_uploaded_file(form.cleaned_data['file'])
+
+            collection = form.cleaned_data['collection']
+            new_collection_name = form.cleaned_data['new_collection_name']
+
+            if new_collection_name:
+                # Создаём новую группу или получаем существующую с таким именем
+                record = Collection(
+                    collection_name=new_collection_name,
+                    user_id=request.user.id
+                )
+                record.save()
+                collection = new_collection_name
+                #collection, created = Collection.objects.get_or_create(collection_name=new_collection_name)
+
+            with open(file_path, 'r', encoding="utf-8") as file:
+                text = file.read()
+
+            collection_id = Collection.objects.get(collection_name=collection).id
+            record = Documents(
+                doc_name=file_path.split("/")[-1],
+                user_id=request.user.id,
+                collection_id=collection_id
+            )
+            record.save()
 
             start_time = time.time()
 
-            all_words, documents = fn.text_prepare("uploads/text")
+            all_words, documents = fn.text_prepare(text, collection)
             tf = fn.get_tf(all_words)
             idf = fn.get_idf(all_words, documents)
 
@@ -45,6 +65,8 @@ def index(request):
             text_size = len(rows)
 
             record = Main(
+                user_id=request.user.id,
+                user_name=request.user.username,
                 top_word=top_word,
                 time_processed=delta_time,
                 text_size=text_size
@@ -54,9 +76,10 @@ def index(request):
             data = {"title": "TF-IDF приложение", "rows": rows[:50]}
 
             return render(request, 'main/table.html', data)
+            #return render(request, 'main/file.html', data)
 
     else:
-        form = UploadFileForm()
+        form = UploadFileForm(user_id=request.user.id)
 
     return render(request, 'main/file.html',
                   {"title": "TF-IDF приложение",
@@ -64,84 +87,3 @@ def index(request):
 
 def test_pg(request):
     return render(request, 'main/test_page.html')
-
-
-class MainAPIView(APIView):
-
-    @swagger_auto_schema(
-        operation_description="""
-                    Возвращает статус приложения
-                    """,
-        responses={200: "Статус работы приложения"}
-    )
-
-    def get(self, request):
-        return Response({'status': 'OK'})
-
-class MainAPIViewVersion(APIView):
-
-    @swagger_auto_schema(
-        operation_description="""
-                Возвращает версию приложения
-                """,
-        responses={200: "Версия приложения"}
-    )
-
-    def get(self, request):
-        return Response({'version': '2.1.0'})
-
-class MainAPIViewMetrics(APIView):
-
-    @swagger_auto_schema(
-        operation_description="""
-            ## Метрики обработки файлов  
-
-            Возвращает статистику по обработанным файлам:  
-            - Общее количество файлов  
-            - Минимальное время обработки  
-            - Среднее время обработки  
-            - Максимальное время обработки  
-            - timestamp обработки файла  
-            - Максимальный размер текста
-            - Средний размер текста  
-
-            **Пример ответа:**  
-            ```json
-            {
-                "files_processed": 100,
-                "min_time_processed": 0.1,
-                "avg_time_processed": 0.5,
-                "max_time_processed": 2.3,
-                "latest_file_processed_timestamp": 1672531200,
-                "max_len_text": 1024,
-                "avg_len_text": 512.5
-            }
-            ```
-            """,
-        responses={200: "Статистика обработки файлов"}
-    )
-
-    def get(self, request):
-
-        files_processed = Main.objects.aggregate(total=Count('*'))['total']
-        min_time_processed = Main.objects.aggregate(min_time=Min('time_processed'))['min_time']
-        avg_time_processed = round(Main.objects.aggregate(avg_time=Avg('time_processed'))['avg_time'], 5)
-        max_time_processed = Main.objects.aggregate(max_time=Max('time_processed'))['max_time']
-        latest_file_processed_timestamp = Main.objects.aggregate(latest_time=Max('time'))['latest_time'].timestamp()
-
-        max_len_text = Main.objects.aggregate(max_len=Max('text_size'))['max_len']
-        avg_len_text = round(Main.objects.aggregate(avg_len=Avg('text_size'))['avg_len'], 5)
-
-        return Response({'files_processed': files_processed,
-                         'min_time_processed': min_time_processed,
-                         'avg_time_processed': avg_time_processed,
-                         'max_time_processed': max_time_processed,
-                         'latest_file_processed_timestamp': latest_file_processed_timestamp,
-                         'max_len_text': max_len_text,
-                         'avg_len_text': avg_len_text
-                         })
-
-
-#class MainAPIView(generics.ListAPIView):
-#    queryset = Main.objects.all()
-#    serializer_class = MainSerializer

@@ -26,7 +26,7 @@
 
         #user_logout {
             position: absolute;
-            top: 40px;
+            top: 85px;
             left: 748px;
         }
         #user_text {
@@ -36,6 +36,21 @@
         }
         #text {
             color: #00FF00;
+        }
+        #user_documents {
+            position: absolute;
+            top: 50px;
+            left: 748px;
+        }
+        #user_password_change {
+            position: absolute;
+            top: 120px;
+            left: 748px;
+        }
+        #user_delete {
+            position: absolute;
+            top: 155px;
+            left: 748px;
         }
     </style>
 
@@ -48,13 +63,9 @@
 
     <main>
 
-        {% if user.is_authenticated %}
-            <div class="user-greeting" id="user_text">
-                <i>user:</i> <strong id="text">{{ user.username }}</strong>
-            </div>
-        {% else %}
-            <div>Вы не авторизованы</div>
-        {% endif %}
+        <div class="user-greeting" id="user_text">
+            <i>user:</i> <strong id="text">{{ user.username }}</strong>
+        </div>
 
         <h1>{{ title }}</h1>
 
@@ -68,7 +79,15 @@
             <p><button type="submit" id="user_logout">Выйти</button></p>
         </form>
 
-    </main>>
+        <form action="users/change_password">
+            <p><button type="submit" id="user_password_change">Изменить пароль</button></p>
+        </form>
+
+        <form action="users/delete-account">
+            <p><button type="submit" id="user_delete">Сгинуть</button></p>
+        </form>
+
+    </main>
 
 </body>
 </html>
