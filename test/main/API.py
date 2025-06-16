@@ -7,6 +7,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from drf_yasg.utils import swagger_auto_schema
 from django.db.models import Count, Min, Avg, Max
+from drf_yasg import openapi
 
 from .models import Main, Documents, Collection
 from . import functions as fn
@@ -17,8 +18,7 @@ class MainAPIView(APIView):
         operation_description="""
                     Возвращает статус приложения
                     """,
-        responses={200: "Статус работы приложения"}
-    )
+        responses={200: "Статус работы приложения"})
 
     def get(self, request):
         return Response({'status': 'OK'})
@@ -33,7 +33,7 @@ class MainAPIViewVersion(APIView):
     )
 
     def get(self, request):
-        return Response({'version': '3.0.0'})
+        return Response({'version': '4.4.0'})
 
 class MainAPIViewMetrics(APIView):
     permission_classes = [IsAuthenticated]
@@ -96,7 +96,7 @@ class MainAPIViewDocuments(APIView):
 
 class MainAPIViewDocumentsID(APIView):
     permission_classes = [IsAuthenticated]
-    @swagger_auto_schema(operation_description="Возвращает документ пользователя по id",)
+    @swagger_auto_schema(operation_description="Возвращает документ пользователя по id документа",)
     def get(self, request, doc_id):
         doc = Documents.objects.filter(user_id=request.user.id, id=doc_id)
 
@@ -113,7 +113,7 @@ class MainAPIViewDocumentsID(APIView):
 class MainAPIViewDocumentDelete(APIView):
     permission_classes = [IsAuthenticated]
     @swagger_auto_schema(
-        operation_description="Удаляет документ по ID",
+        operation_description="Удаляет документ по его id среди доступных пользователю документов",
         responses={
             200: "Документ успешно удален",
             404: "Документ не найден"
@@ -130,7 +130,7 @@ class MainAPIViewDocumentDelete(APIView):
 
 class MainAPIViewCollection(APIView):
     permission_classes = [IsAuthenticated]
-    @swagger_auto_schema(operation_description="Возвращает список коллекций пользователя с id и списком входящих в них документов",)
+    @swagger_auto_schema(operation_description="Возвращает список коллекций пользователя с id коллекций и списком входящих в них документов",)
     def get(self, request):
         collections = Collection.objects.filter(user_id=request.user.id)
         result = []
@@ -145,7 +145,7 @@ class MainAPIViewCollection(APIView):
 
 class MainAPIViewCollectionID(APIView):
     permission_classes = [IsAuthenticated]
-    @swagger_auto_schema(operation_description="Возвращает список id документов, входящих в конкретную коллекцию",)
+    @swagger_auto_schema(operation_description="Возвращает список id доступных пользователю документов, входящих в конкретную коллекцию",)
     def get(self, request, coll_id):
         exists = Collection.objects.filter(id=coll_id, user_id=request.user.id).exists()
         if not exists:
@@ -162,7 +162,9 @@ class MainAPIViewCollectionID(APIView):
 
 class MainAPIViewChangeCollection(APIView):
     permission_classes = [IsAuthenticated]
-    @swagger_auto_schema(operation_description="Изменяет коллекцию у выбранного документа из доступных пользователю", )
+    @swagger_auto_schema(operation_description="""Изменяет коллекцию у выбранного документа из доступных пользователю
+                                                  Где coll_id - новая коллекция
+                                                  doc_id - id документа у которого меняем коллекицю""", )
     def post(self, request, coll_id, doc_id):
         try:
 
@@ -338,3 +340,26 @@ class MainAPIViewUserDelete(APIView):
 
         except Exception as e:
             return Response({'error': f'Ошибка: {str(e)}'})
+'''
+class MainAPIViewHuffman(APIView):
+    permission_classes = [IsAuthenticated]
+    @swagger_auto_schema(operation_description="Возвращает содержимое документа, закодированное Кодом Хаффмана",)
+    def get(self, request, doc_id):
+        doc = Documents.objects.filter(user_id=request.user.id, id=doc_id)
+
+        if not doc.exists():
+            return Response({"error": "Документ не найден"}, status=404)
+
+        doc_name = DocumentsSerializer(doc.first()).data["doc_name"]
+
+        with open(f'./uploads/{doc_name}', "r", encoding='UTF-8') as file:
+            text = file.read()
+
+        dct = {}
+        for ch in text:
+            dct[ch] = dct.get(ch, 0) + 1
+        dct = sorted(dct, key=lambda x: x.key())
+        dct = sorted(dct, key=lambda x: x.value())
+
+        return Response({"doc_name": text})
+'''
