@@ -1,13 +1,14 @@
-from .serializers import MainSerializer, DocumentsSerializer, CollectionsSerializer
+from .serializers import DocumentsSerializer
 from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib.auth.models import User
 from rest_framework.response import Response
-from rest_framework import generics, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from drf_yasg.utils import swagger_auto_schema
 from django.db.models import Count, Min, Avg, Max
-from drf_yasg import openapi
+
+from collections import Counter
+from heapq import heapify, heappop, heappush
 
 from .models import Main, Documents, Collection
 from . import functions as fn
@@ -340,7 +341,7 @@ class MainAPIViewUserDelete(APIView):
 
         except Exception as e:
             return Response({'error': f'Ошибка: {str(e)}'})
-'''
+
 class MainAPIViewHuffman(APIView):
     permission_classes = [IsAuthenticated]
     @swagger_auto_schema(operation_description="Возвращает содержимое документа, закодированное Кодом Хаффмана",)
@@ -355,11 +356,67 @@ class MainAPIViewHuffman(APIView):
         with open(f'./uploads/{doc_name}', "r", encoding='UTF-8') as file:
             text = file.read()
 
-        dct = {}
-        for ch in text:
-            dct[ch] = dct.get(ch, 0) + 1
-        dct = sorted(dct, key=lambda x: x.key())
-        dct = sorted(dct, key=lambda x: x.value())
+        class Node:
+            """
+            Элемент дерева символов для алгоритма Хаффмана. Содержит символ текста,
+            частоту его повторения и массив непосредственных потомков в дереве.
+            Объекты можно сравнивать. Сравнение производится по частоте повторения,
+            либо по номерам символов в Unicode, если частоты равны.
+            """
 
-        return Response({"doc_name": text})
-'''
+            def __init__(self, letter=None, freq=0, children=None):
+                self.letter = letter
+                self.freq = freq
+                self.children = children or []
+
+            def tuple(self):
+                return (self.freq, ord(self.letter) if self.letter else -1)
+
+            def __lt__(self, other):
+                return self.tuple() < other.tuple()
+
+            def __eq__(self, other):
+                return self.tuple() == other.tuple()
+
+        def encoding_table(node, code=''):
+            """
+            Превращает построенное алгоритмом Хаффмана дерево
+            в словарь соответствия символ-код.
+            """
+            if node.letter is None:
+                mapping = {}
+                # Используем 0 и 1 для двоичного кодирования
+                for child in node.children:
+                    mapping.update(encoding_table(child, code + ('0' if child == node.children[0] else '1')))
+                return mapping
+            else:
+                return {node.letter: code}
+
+        def huffman_encode(text):
+            """
+            Кодирует строку текста алгоритмом Хаффмана с двоичным кодированием.
+            :param text: текст для кодирования
+            :return: tuple: (<дерево декодирования>, <закодированная строка>)
+            """
+            nodes = [Node(letter, freq) for letter, freq in Counter(text).items()]
+            heapify(nodes)
+
+            # Строит двоичное дерево
+            while len(nodes) > 1:
+                list_children = [heappop(nodes) for _ in range(2)]  # Всегда берём 2 элемента
+
+                freq = sum([node.freq for node in list_children])
+                node = Node(None, freq)
+                node.children = list_children
+
+                heappush(nodes, node)
+
+            root = nodes[0]
+            codes = encoding_table(root)
+
+            return root, ''.join([codes[letter] for letter in text])
+
+        # Пример использования функции
+        tree, encoded_text = huffman_encode(text)
+
+        return Response({"doc_name": doc_name, "Huffman_text": encoded_text})

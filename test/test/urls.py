@@ -14,7 +14,7 @@ from main.API import (MainAPIView, MainAPIViewVersion, MainAPIViewMetrics,
                         MainAPIViewCollection, MainAPIViewCollectionID, MainAPIViewChangeCollection,
                         MainAPIViewDelCollection, MainAPIViewCollectionStat, MainAPIViewDocumentStat,
                         MainAPIViewLogout, MainAPIViewLogin, MainAPIViewRegister,
-                        MainAPIViewUser, MainAPIViewUserDelete)
+                        MainAPIViewUser, MainAPIViewUserDelete, MainAPIViewHuffman)
 from traitlets.utils.descriptions import describe
 
 #from main.views import page_not_found
@@ -54,8 +54,7 @@ urlpatterns = [
     path('api/v1/user/<str:user_password>/<str:new_user_password>', MainAPIViewUser.as_view()),
     path('api/v1/user/<str:user_password>', MainAPIViewUserDelete.as_view()),
 
-
-
+    path('api/v1/huffman/<int:doc_id>', MainAPIViewHuffman.as_view()),
 
     path('api/v1/swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('api/v1/redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),

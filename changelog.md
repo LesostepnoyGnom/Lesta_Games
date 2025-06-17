@@ -99,7 +99,7 @@ DATABASES = {
 - Дополнил API:
   - POST /collection/<collection_id>/<document_id> — 
 добавить документ в коллекцию
-  - POST /collection/document_id> — 
+  - POST /collection/<document_id> — 
 удалить документ из коллекции заменив её id на None.  
   Сделано иначе чем в ТЗ "DELETE /collection/<collection_id>/<document_id> — 
 удалить документ из коллекции"  
