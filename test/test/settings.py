@@ -73,7 +73,7 @@ DATABASES = {
         'HOST': 'localhost',
         'PORT': os.getenv('PG_PORT', '5432'),
         'USER': os.getenv('PG_USER', 'postgres'),
-        'PASSWORD': os.getenv('PG_PASSWORD', '57365200*!Ebuchij'),
+        'PASSWORD': os.getenv('PG_PASSWORD', 'password'),
         'NAME': os.getenv('PG_NAME', 'postgres')
     }
 }
