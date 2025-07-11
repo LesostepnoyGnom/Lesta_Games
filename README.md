@@ -30,7 +30,7 @@
 ## Запуск приложения 
 ### Установка проекта
 ```bush
-git clone https://github.com/LesostepnoyGnom/Lesta_Games
+git clone https://github.com/LesostepnoyGnom/TF-IDF
 ```
 ### Запуск проекта
 ```bush
